@@ -784,13 +784,6 @@
       "Repository": "CRAN",
       "Hash": "474ba7eccf9e6a94cdd988123a86d33a"
     },
-    "mixOmics": {
-      "Package": "mixOmics",
-      "Version": "6.10.8",
-      "Source": "Repository",
-      "Repository": "Bioconductor",
-      "Hash": "c32c70bc875a0965b9e15a2c0748fcdf"
-    },
     "mnormt": {
       "Package": "mnormt",
       "Version": "1.5-5",
