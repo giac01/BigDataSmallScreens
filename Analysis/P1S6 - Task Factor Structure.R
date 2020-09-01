@@ -33,15 +33,11 @@ SexyParallelPlot = function(psych_output, col1="red", col2="green"){
   return(out)
 }
 
-
 core_tasks = c("reading_n_total_Norm","sums_n_total_Norm","digit_span_n_correct_Norm","dot_matrix_n_correct_Norm","cancellation_marked_intertime_Norm","ans_IRT_ScoreNorm","cattell_IRT_ScoreNorm")
-
 
 #Dataframe with all cognition
 # df0_AllTasks = df0[df0$SchoolID!=99,CogV_Accuracy[c(-4,-6)]] #all task data without GNG comission errors and d' 
 df0_CoreTaskSchoolSample = df0[df0$SchoolID!=99,core_tasks] #Data from SCHOOL sample and using core tests 
-
-
 
 #Parrallel Analysis on All tasks
   AllTasks_Parallel2 = psych::fa.parallel(df0_CoreTaskSchoolSample, use="pairwise", n.iter=1000,error.bars = TRUE,fm="minres", sim=FALSE)
