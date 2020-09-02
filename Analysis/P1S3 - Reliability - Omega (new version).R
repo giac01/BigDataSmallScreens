@@ -16,14 +16,22 @@
   G2 = coefH(df0[,c("GNG_omErr_1H_Norm","GNG_omErr_2H_Norm")],verbose=TRUE,n_bootstrap=N_RESAMPLES) #Ommission errors
   G3 = coefH(df0[,c("GNG_comErr_1H_Norm","GNG_comErr_2H_Norm")],verbose=TRUE,n_bootstrap=N_RESAMPLES) #Commission errors
   
+  #Cattell-like Matrix reasoning test
   Cat_data = data.frame(na.omit(df0[,which(grepl("Cattell_ItemCorrect",colnames(df0)))]))
   Cat = coefH(Cat_data,verbose = TRUE,n_bootstrap=N_RESAMPLES, poly_set = FALSE) #Cattell-like Matrix reasoning test
 
 #Split-Half Reliabilities - Literacy Tasks
   Read = coefH(df0[,c("reading_n_total_1H","reading_n_total_2H")],verbose=TRUE,n_bootstrap=N_RESAMPLES) #Reading Fluency 
   RJ = coefH(df0[,paste0("RJ_itemcorrect_",c(3,4,5,7,9,11))],verbose=TRUE,n_bootstrap=N_RESAMPLES, poly_set = FALSE) #Rhyme Judgement
-  PD = coefH(na.omit(df0[,paste0("PD_itemcorrect_",c(1:3,5:44))]),verbose=TRUE,n_bootstrap=N_RESAMPLES, poly_set = FALSE) #Phono discrimination
-    #In the synthetic dataset the function runs into an error above. This seems to occur on some bootstrap resamples where there is 100% correct on a variable. 
+  
+  #Phonological discrimination  
+  
+  #PLEASE READ NOTES:
+  
+    # In the synthetic dataset the function runs into an error for phonoligcal discrimination. This occurs on some bootstrap resamples where there is 100% correct on a given variable (and causes an NA in the correlation matrix). 
+    # I've removed problem variables below where there are very high pass rates:
+    # If it doesn't work, try running it again:
+    PD = coefH(na.omit(df0[,paste0("PD_itemcorrect_",c(1:44)[c(-4,-17,-28)])]),verbose=TRUE,n_bootstrap=N_RESAMPLES, poly_set = FALSE) #Phono discrimination
 
 #Reliability - Arithmetic Tasks 
   Sums = coefH(df0[,c("sums_n_total_1H","sums_n_total_2H")],verbose=TRUE,n_bootstrap=N_RESAMPLES) #Arithmetic Fluency Test
