@@ -3,7 +3,7 @@
 ######### ######### #########   NOTE    ######### ######### ######### ######### 
 ######### ######### ######### ######### ######### ######### ######### ######### 
 
-#This code requires access to raw ipad data which is not provided in the repoisitory! 
+#This code requires access to raw ipad data which is not provided in the repository! 
 
 
 #Load Data and Functions Needed 

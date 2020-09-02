@@ -1,11 +1,11 @@
-
+#This won't run on synthetic data untill the output is created for all .Rdata files below from running other scripts. 
 
 source("P1S0 - Load Data.R")
 
 
 #Load Data
   base::load(file.path(RED_OUTPUTDATA_LOCATION, "TimeTakenTable.RData")) #Data on how long each task takes
-  base::load(file.path(RED_OUTPUTDATA_LOCATION, "CTT_PlotData.Rdata")) #Coefficient H reliability metrics with confidence intervals 
+  base::load(file.path(RED_OUTPUTDATA_LOCATION, "CTT_PlotData.Rdata")) #Reliability metrics for each task with confidence intervals 
     CTT_PlotData = rbind.data.frame(CTT_PlotData[1,],rep(NA,length(CTT_PlotData)),rep(NA,length(CTT_PlotData)),CTT_PlotData[2:nrow(CTT_PlotData),])
     CTT_PlotData$Tasks3 = CogV_Accuracy_Labels
     CTT_PlotData$Tasks3 = gsub("Go/No-Go","G/N-G",CTT_PlotData$Tasks3)
