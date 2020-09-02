@@ -534,18 +534,6 @@
       "Repository": "CRAN",
       "Hash": "e8700e1bc2963a77ff8d80f42faa5a46"
     },
-    "holepunch": {
-      "Package": "holepunch",
-      "Version": "0.1.28.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "holepunch",
-      "RemoteUsername": "karthik",
-      "RemoteRef": "master",
-      "RemoteSha": "918f12d2f235f7696f04d6603a5b79aca23fcdd1",
-      "Hash": "20bec7c5ec4143c29f059104c4caf601"
-    },
     "htmltools": {
       "Package": "htmltools",
       "Version": "0.4.0",
