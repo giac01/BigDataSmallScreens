@@ -3,8 +3,8 @@
     "Version": "3.6.2",
     "Repositories": [
       {
-        "Name": "https://mran.microsoft.com/snapshot/2019-11-01",
-        "URL": "https://mran.microsoft.com/snapshot/2019-11-01"
+        "Name": "CRAN",
+        "URL": "https://cran.rstudio.com"
       }
     ]
   },
@@ -1108,10 +1108,10 @@
     },
     "rlang": {
       "Package": "rlang",
-      "Version": "0.4.6",
+      "Version": "0.4.7",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "aa263e3ce17b177c49e0daade2ee3cdc"
+      "Hash": "c06d2a6887f4b414f8e927afd9ee976a"
     },
     "roxygen2": {
       "Package": "roxygen2",
