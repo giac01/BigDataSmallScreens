@@ -1,6 +1,7 @@
 #Load Data and functions 
   rm(list=ls())
   source("P1S0 - Load Data.R")
+  
 
 #Load Additional Packages
   library(mice)
@@ -64,13 +65,13 @@
     #Create variables representing clusters (teacher responses)
     df0_school$Class_ID = (paste0(df0_school$SchoolID,"_",df0_school$ClassID))
     # df0_school$Teacher_ID[df0_school$Teacher_ID=="1_3"|df0_school$Teacher_ID=="6_NA"]=NA
-    table(df0_school$Class_ID,df0_school$TeacherResponseID) 
+    # table(df0_school$Class_ID,df0_school$TeacherResponseID) 
     
     #Create a single cognition score for random slope analyses (and check coefficient H of cognitive measure)
     df0_school_imputed$Cog_Score = Normalise(calcFactorScore(df1=df0_school_imputed,var= c("reading_n_total_Norm", "sums_n_total_Norm", "cancellation_marked_intertime_Norm", "digit_span_n_correct_Norm", "dot_matrix_n_correct_Norm", "cattell_IRT_ScoreNorm", "ans_IRT_ScoreNorm")))
     coefH(df0_school_imputed[,c("reading_n_total_Norm", "sums_n_total_Norm", "cancellation_marked_intertime_Norm", "digit_span_n_correct_Norm", "dot_matrix_n_correct_Norm", "cattell_IRT_ScoreNorm", "ans_IRT_ScoreNorm")])
     
-    df0_school_imputed$TeacherResponseID = df0_school$TeacherResponseID
+    df0_school_imputed$TeacherResponseID = df0_school$Class_ID #I didn't include teacher response ID in synthetic dataset, so putting class ID in... 
     
     library(lme4)
     library(MuMIn)
@@ -92,7 +93,7 @@
   
     
     #Reported analyses
-    summary(as.numeric(table(df0_school$TeacherResponseID)))
+    # summary(as.numeric(table(df0_school$TeacherResponseID)))
     
     #ICC for single intercept model
     # summary(Pred1)
@@ -224,7 +225,7 @@
   save(Cor_list, file=file.path(RED_OUTPUTDATA_LOCATION, "Cor_list.Rdata"))
   save(CogV_NumberSchoolTesting, file=file.path(RED_OUTPUTDATA_LOCATION, "CogV_NumberSchoolTesting.Rdata"))
 
-#Hierarchial Linear Models Predicting AA from cognitive variables over AGE & SES .
+#Hierarchial Linear Models Predicting AA from cognitive variables after controlling for AGE & SES .
   out_anova=list()
   p_val = vector()
   change_R2 = vector()
@@ -246,12 +247,6 @@
     p_val_out[p_val<.05/length(p_val)]="**"
     change_R2_out = paste0(change_R2_out,"~",p_val_out,"~")
   save(change_R2_out,file=file.path(RED_OUTPUTDATA_LOCATION, "change_R2_out.Rdata")) #output the change in R2 (sqrt) with significance values, formatted nicely! 
-  
-#Lm with just two AA tablet measures
-  lm_model1 = lm(S1_TeachNorm_FSN_Complete ~ sums_n_total_Norm + reading_n_total_Norm,data=df0_PV, na.action = "na.exclude")
-  summary(lm_model1)
-  plot(df0_PV$S1_TeachNorm_FSN_Complete, predict(lm_model1))
-  cor.test(df0_PV$S1_TeachNorm_FSN_Complete, predict(lm_model1))
   
 
 
