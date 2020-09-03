@@ -58,7 +58,7 @@
       checkConvergence = t(sapply(seq_along(MI_list), function(i) MI_list[[i]]$converged ))
       checkConvergence = apply(checkConvergence,1,function(x) length(which(x))==5) #ALL COVERGED IN MANUSCRUPT 
       keepCases = which(checkConvergence)
-      #MI_list2 = MI_list[keepCases] ;
+      #MI_list = MI_list[keepCases] ; #If there are non-convergent cases, you may want to uncomment this
 
 
 
@@ -107,19 +107,19 @@
       p = gsub("^0.",".",format( MI_Model_Comaprisons$`Pr(>Chisq)`, digits=0,nsmall=3)) ; p[1]="";
       CFI = gsub("^0.",".",format(sapply(MI_Models, function(x) fitMeasures(x, "cfi")), digits=3))
         CFI_numeric = as.numeric(sapply(MI_Models, function(x) fitMeasures(x, "cfi")))
-        ΔCFI = format(CFI_numeric[-1]-CFI_numeric[-5], digits=0, nsmall=3)
-        ΔCFI = c("", ΔCFI)
-        ΔCFI_LB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(CFI_Change_Loadings[1,], digits=0, nsmall=3)))
-        ΔCFI_UB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(CFI_Change_Loadings[3,], digits=0, nsmall=3)))
+        deltaCFI = format(CFI_numeric[-1]-CFI_numeric[-5], digits=0, nsmall=3)
+        deltaCFI = c("", deltaCFI)
+        deltaCFI_LB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(CFI_Change_Loadings[1,], digits=0, nsmall=3)))
+        deltaCFI_UB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(CFI_Change_Loadings[3,], digits=0, nsmall=3)))
       RMSEA_numeric = sapply(MI_Models, function(x) fitMeasures(x, "rmsea"))
         RMSEA = gsub("^0.",".",format(RMSEA_numeric , digits=3))
-        ΔRMSEA = format(RMSEA_numeric[-1]- RMSEA_numeric[-5], digits=0, nsmall=3) 
-        ΔRMSEA = c("",ΔRMSEA)
-        ΔRMSEA_LB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(RMSEA_Change_Loadings[1,], digits=0, nsmall=3)))
-        ΔRMSEA_UB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(RMSEA_Change_Loadings[3,], digits=0, nsmall=3)))
+        deltaRMSEA = format(RMSEA_numeric[-1]- RMSEA_numeric[-5], digits=0, nsmall=3) 
+        deltaRMSEA = c("",deltaRMSEA)
+        deltaRMSEA_LB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(RMSEA_Change_Loadings[1,], digits=0, nsmall=3)))
+        deltaRMSEA_UB = c("",gsub('^(-)?(\\s)?0[.]', '\\1.', format(RMSEA_Change_Loadings[3,], digits=0, nsmall=3)))
       AIC = format(sapply(MI_Models, function(x) fitMeasures(x, "aic")), digits=1)
       
-      MeasurementInvariance_table = cbind.data.frame(Models, ChiSq,df,p, CFI,ΔCFI,ΔCFI_LB,ΔCFI_UB, RMSEA,ΔRMSEA,ΔRMSEA_LB,ΔRMSEA_UB,AIC)
+      MeasurementInvariance_table = cbind.data.frame(Models, ChiSq,df,p, CFI,deltaCFI,deltaCFI_LB,deltaCFI_UB, RMSEA,deltaRMSEA,deltaRMSEA_LB,deltaRMSEA_UB,AIC)
       
       save(MeasurementInvariance_table, file=file.path(RED_OUTPUTDATA_LOCATION,"MeasurementInvariance_table.Rdata"))
       
@@ -158,7 +158,7 @@
 # Neighbourhood deprivation
   df0$Group_Numeric = as.numeric(df0$Group=="School") # 0 = lab group 1 = school group
   keep = apply(df0[core_tasks],1,function(x) length(which(!is.na(x))))>1 # Keep children who have completed the assessments 
-  cor.test(df0$Group_Numeric[keep], df0$DEPRIVATION.Index_of_Multiple_Deprivation_Rank[keep])
+  # cor.test(df0$Group_Numeric[keep], df0$DEPRIVATION.Index_of_Multiple_Deprivation_Rank[keep])
 
   
 # Task intercepts reported 
