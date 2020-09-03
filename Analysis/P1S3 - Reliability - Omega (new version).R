@@ -31,7 +31,7 @@
     # In the synthetic dataset the function runs into an error for phonoligcal discrimination. This occurs on some bootstrap resamples where there is 100% correct on a given variable (and causes an NA in the correlation matrix). 
     # I've removed problem variables below where there are very high pass rates:
     # If it doesn't work, try running it again:
-    PD = coefH(na.omit(df0[,paste0("PD_itemcorrect_",c(1:44)[c(-4,-17,-28)])]),verbose=TRUE,n_bootstrap=N_RESAMPLES, poly_set = FALSE) #Phono discrimination
+    PD = coefH(na.omit(df0[,paste0("PD_itemcorrect_",c(1:44)[c(-4,-13,-17,-28)])]),verbose=TRUE,n_bootstrap=N_RESAMPLES, poly_set = FALSE) #Phono discrimination
 
 #Reliability - Arithmetic Tasks 
   Sums = coefH(df0[,c("sums_n_total_1H","sums_n_total_2H")],verbose=TRUE,n_bootstrap=N_RESAMPLES) #Arithmetic Fluency Test

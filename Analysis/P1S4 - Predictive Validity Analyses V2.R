@@ -8,9 +8,6 @@
   library(caret)
   library(parallel)
   
-  # library(doParallel)
-  library(mixOmics)
-  
 #Imputation of missing cognitive data - school only
   #What we do here, is to input data for children with one missing value in the "Input Variables" vector. The outcome variable is kept seperate during the imputation. 
   
@@ -123,6 +120,7 @@
 
     performance::check_convergence(Pred5)
     performance::check_heteroscedasticity(Pred5)
+      #The synthetic data appears to be a lot more heteroscedastic than original data... 
     
     #Check Heteroscedasticity
     m=Pred5
@@ -238,6 +236,7 @@
     p_val[i] = as.numeric(out_anova[[i]]$"Pr(>F)"[2])
     change_R2[i] = (summary(cog_model)$adj.r.squared-summary(base_model)$adj.r.squared)
   }
+  
   
   save(change_R2,file=file.path(RED_OUTPUTDATA_LOCATION, "change_R2.Rdata"))
   #save(p_val_out,file="p_val_out.Rdata")

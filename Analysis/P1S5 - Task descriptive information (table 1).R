@@ -1,6 +1,9 @@
-#This won't run on synthetic data untill the output is created for all .Rdata files below from running other scripts. 
+# Script which generates Table 1 data, and exports to clipboard and csv
+
 
 source("P1S0 - Load Data.R")
+
+#Note that reliability/validity .Rdata files in the repository are estimated from synthetic data. 
 
 
 #Load Data
@@ -35,25 +38,16 @@ TaskData = cbind.data.frame(CTT_PlotData$Tasks3,CogV_NumberSchoolTesting,Correla
   TaskData = apply(TaskData,2,function(x)gsub("^[\\s]?(0[\\.])", ".", as.character(x)))
   TaskData = apply(TaskData,2, function(x) gsub("0[\\.]","0.",gsub("-0[\\.]","-.",x)))
   TaskData[TaskData=="  NA"]=" "
-  TaskData
-  
+
   
   #"$[\\]Delta R^{2^{1/2}}$"
 colnames(TaskData) = c("", "", "r", "LB", "UB", "Δr", "Rel", "LB","UB","10%","50%","90%" )
+
 save(TaskData,file=file.path(RED_OUTPUTDATA_LOCATION, "TaskData.Rdata"))
 
 
 #Write table to clipboard for copy and pasting into word/excel ... 
 write.table(TaskData, file="clip", sep="\t", row.names=FALSE)
 clipr::write_clip(TaskData)
-# rownames(TaskData)
-# TaskData
-# ncol(TaskData)
-# library(markdown)
-# library(formattable)
-# library(kableExtra)
-# 
-# knitr::kable(TaskData) %>%
-#   #kableExtra::kable_styling("striped") %>%
-#   kableExtra::add_header_above(c("Task Name","N","Correlation With Academic Achievement"=4,"Coefficient H Reliability"=3,"Time Taken (Percentile)"=3))
+
 

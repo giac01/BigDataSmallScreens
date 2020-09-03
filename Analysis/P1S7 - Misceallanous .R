@@ -1,22 +1,19 @@
 #Load Data and functions 
 source("P1S0 - Load Data.R")  
 
-apply(df0[,findMCS("ans_trialcorrect_")],2,function(x) length(which(x==1))/length(which(x==1|x==0)))
+# apply(df0[,findMCS("ans_trialcorrect_")],2,function(x) length(which(x==1))/length(which(x==1|x==0)))
 
 
-colnames(df0)[1:70]
 
-unique(df0$SchoolID)
-unique(df0$ClassID)
 
 #Sample Decomposition
 
 #How many (in the school cohort) have completed at least one assessment? 
 
 df0_school = df0[!grepl("^99",df0$PpsID),] #Children with school ids (though we may have no cognitive data for them!)
-df0_school_tested = df0_school[apply(df0_school[,CogV_Accuracy],1, function(x) length(which(!is.na(x))))>0,] #Children with at least one assessment (in reality, min was 6) tested in schools
+df0_school_tested = df0_school[apply(df0_school[,CogV_Accuracy],1, function(x) length(which(!is.na(x))))>0,] #Dataframe inlcuidng children with at least one assessment (in reality, min was 6) tested in schools
 
-#Standard Error of measurement 
+#Standard Error of measurement calculations (See end of discussion)
 
   reliability = .90
   score_sd = 15
@@ -44,7 +41,7 @@ sd(df0_school_tested$Age1,na.rm=TRUE)
   
   table(!is.na(df0_teacherresponses$APQ1),df0_teacherresponses$School_Class) #data on kids from 16 classes. 
 
-#Teacher rating correlations
+#Teacher APQ rating correlations & reliability
   cor(df0[,paste0("APQ",1:3,"_Norm")], use = "pairwise.complete.obs")
   cors = cor(df0[,paste0("APQ",1:3,"_Norm")], use = "pairwise.complete.obs")
   mean(cors[c(2,3,6)])
