@@ -142,5 +142,4 @@ df0_scores = cbind.data.frame(
   IRT_Vocab_Score,IRT_Vocab_ScoreNorm
 )
 
-
 write.csv(df0_scores,file.path(RED_DATASET_PARENTFOLDER,"red_df0_scoreddata_ALLCHILDREN_Aug2020.csv"),row.names = FALSE)

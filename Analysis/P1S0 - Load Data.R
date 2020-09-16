@@ -1,7 +1,7 @@
 rm(list=ls())
 
 USE_SYNTHETIC_DATA = TRUE
-
+if (USE_SYNTHETIC_DATA){print("WARNING: USING SYNTHETIC DATA, NOT ORIGINAL DATA")}
 
 #Paths of folders containing scripts/datasets
   IPAD_DATA_LOCATION = ""  #Location of RAW ipad data - !!!! please note this isn't provided in the repository!!!!

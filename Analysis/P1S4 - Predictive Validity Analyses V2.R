@@ -1,12 +1,11 @@
 #Load Data and functions 
   rm(list=ls())
   source("P1S0 - Load Data.R")
-  
 
 #Load Additional Packages
   library(mice)
-  library(caret)
   library(parallel)
+  library(boot)
   
 #Imputation of missing cognitive data - school only
   #What we do here, is to input data for children with one missing value in the "Input Variables" vector. The outcome variable is kept seperate during the imputation. 
@@ -35,23 +34,42 @@
   summary(mod2)
 
 #Bootstrap estimation of adjusted R^2 confidence intervals 
-  train_control_boot = caret::trainControl(method="boot", number=3000, savePredictions = TRUE,allowParallel = FALSE)
+    BootstrapResamples = 6000
+    set.seed(1321)
   
-  set.seed(4324)
-  Pred1 = caret::train(as.formula("S1_TeachNorm_FSN_Complete ~ reading_n_total_Norm + sums_n_total_Norm"), data=df0_school_imputed, trControl = train_control_boot,method="lm", na.action=na.omit)
-    apply(Pred1$resample[1:3],2, function(x) quantile(x, c(.025,.5,.975), type=6))
-    adjR2(apply(Pred1$resample[2],2, function(x) quantile(x, c(.025,.5,.975), type=6)), 414, 2) #Adjusted R2 bootstrapped! 
+  #Bootstrap mod0 (just reading and sums as predictors)
+    lm_fun = function(data,i){
+      return(
+        as.numeric(summary(lm(S1_TeachNorm_FSN_Complete ~ reading_n_total_Norm + sums_n_total_Norm, data=data[i,]))$r.squared)
+      )
+    }
+  
+    boot_lm = boot::boot(data=df0_school_imputed, statistic=lm_fun, R=BootstrapResamples)
+    boot::boot.ci(boot_lm, conf=0.95, type="bca") # 95% confidence interval for R2
+    boot::boot.ci(boot_lm, conf=0.00001, type="bca") # The bias corrected and accelated central estimate is also very similar to the adjusted R2 estimate :) 
     
-  set.seed(4324)
-  Pred2 = caret::train(as.formula("S1_TeachNorm_FSN_Complete ~ cancellation_marked_intertime_Norm + digit_span_n_correct_Norm + dot_matrix_n_correct_Norm + cattell_IRT_ScoreNorm + ans_IRT_ScoreNorm"), data=df0_school_imputed, trControl = train_control_boot,method="lm", na.action=na.omit)
-    apply(Pred2$resample[1:3],2, function(x) quantile(x, c(.025,.5,.975), type=6))
-    adjR2(apply(Pred2$resample[2],2, function(x) quantile(x, c(.025,.5,.975), type=6)), 410, 5) #Adjusted R2 bootstrapped! 
     
+  #Bootstrap mod1 (cognition predictors)
+    lm_fun = function(data,i){
+      return(
+        as.numeric(summary(lm(S1_TeachNorm_FSN_Complete ~ cancellation_marked_intertime_Norm + digit_span_n_correct_Norm + dot_matrix_n_correct_Norm + cattell_IRT_ScoreNorm + ans_IRT_ScoreNorm, data=data[i,]))$r.squared)
+      )
+    }
     
-  set.seed(4324)
-  Pred3 = caret::train(as.formula("S1_TeachNorm_FSN_Complete ~ reading_n_total_Norm + sums_n_total_Norm + cancellation_marked_intertime_Norm + digit_span_n_correct_Norm + dot_matrix_n_correct_Norm + cattell_IRT_ScoreNorm + ans_IRT_ScoreNorm"), data=df0_school_imputed, trControl = train_control_boot,method="lm", na.action=na.omit)
-    apply(Pred3$resample[1:3],2, function(x) quantile(x, c(.025,.5,.975), type=6))
-    adjR2(apply(Pred3$resample[2],2, function(x) quantile(x, c(.025,.5,.975), type=6)), 410, 7) #Adjusted R2 bootstrapped! 
+    boot_lm = boot::boot(data=df0_school_imputed, statistic=lm_fun, R=BootstrapResamples)
+    boot::boot.ci(boot_lm, conf=0.95, type="bca") # 95% confidence interval for R2
+    boot::boot.ci(boot_lm, conf=0.00001, type="bca") # The bias corrected and accelated central estimate is also very similar to the adjusted R2 estimate :) 
+    
+  #Bootstrap mod2 (all 7 predictors)
+    lm_fun = function(data,i){
+      return(
+        as.numeric(summary(lm(S1_TeachNorm_FSN_Complete ~ reading_n_total_Norm + sums_n_total_Norm + cancellation_marked_intertime_Norm + digit_span_n_correct_Norm + dot_matrix_n_correct_Norm + cattell_IRT_ScoreNorm + ans_IRT_ScoreNorm, data=data[i,]))$r.squared)
+      )
+    }
+    
+    boot_lm = boot::boot(data=df0_school_imputed, statistic=lm_fun, R=BootstrapResamples)
+    boot::boot.ci(boot_lm, conf=0.95, type="bca") # 95% confidence interval for R2
+    boot::boot.ci(boot_lm, conf=0.00001, type="bca") # The bias corrected and accelated central estimate is also very similar to the adjusted R2 estimate :) 
     
     
 #Random effect models - predicting teacher rated AA from tablet metrics
@@ -62,13 +80,12 @@
     #Create variables representing clusters (teacher responses)
     df0_school$Class_ID = (paste0(df0_school$SchoolID,"_",df0_school$ClassID))
     # df0_school$Teacher_ID[df0_school$Teacher_ID=="1_3"|df0_school$Teacher_ID=="6_NA"]=NA
-    # table(df0_school$Class_ID,df0_school$TeacherResponseID) 
-    
+
     #Create a single cognition score for random slope analyses (and check coefficient H of cognitive measure)
     df0_school_imputed$Cog_Score = Normalise(calcFactorScore(df1=df0_school_imputed,var= c("reading_n_total_Norm", "sums_n_total_Norm", "cancellation_marked_intertime_Norm", "digit_span_n_correct_Norm", "dot_matrix_n_correct_Norm", "cattell_IRT_ScoreNorm", "ans_IRT_ScoreNorm")))
     coefH(df0_school_imputed[,c("reading_n_total_Norm", "sums_n_total_Norm", "cancellation_marked_intertime_Norm", "digit_span_n_correct_Norm", "dot_matrix_n_correct_Norm", "cattell_IRT_ScoreNorm", "ans_IRT_ScoreNorm")])
     
-    df0_school_imputed$TeacherResponseID = df0_school$Class_ID #I didn't include teacher response ID in synthetic dataset, so putting class ID in... 
+    df0_school_imputed$TeacherResponseID = df0_school$Class_ID
     
     library(lme4)
     library(MuMIn)
@@ -88,10 +105,6 @@
     plot(fitted(Pred5), df0_school_imputed$S1_TeachNorm_FSN_Complete)
     plot(fitted(mod2), df0_school_imputed$S1_TeachNorm_FSN_Complete)
   
-    
-    #Reported analyses
-    # summary(as.numeric(table(df0_school$TeacherResponseID)))
-    
     #ICC for single intercept model
     # summary(Pred1)
     #   set.seed(23124)
@@ -114,53 +127,21 @@
       lme4::confint.merMod(Pred5, method="boot", nsim=3000,boot.type = 'perc' )
       performance::icc(Pred5)
       MuMIn::r.squaredGLMM(Pred5)
-      
-      
-
 
     performance::check_convergence(Pred5)
     performance::check_heteroscedasticity(Pred5)
-      #The synthetic data appears to be a lot more heteroscedastic than original data... 
     
     #Check Heteroscedasticity
     m=Pred5
-    ggplot2::qplot(fitted(Pred5),residuals(Pred5), geom = c("point", "smooth"))
+    ggplot2::qplot(fitted(Pred5),residuals(Pred5), geom = c("point", "smooth")) #The synthetic data appears to be a lot more heteroscedastic than original data... 
     fitted(Pred5)
     residuals(Pred5)
     
     
-    ###Ignore####
-      # anova(Pred2,Pred3,Pred4)
-      # lme4::splom(Pred3)
-      # summary(Pred5)
-      # x = data.frame(VarCorr(Pred5))
-      # var_r = x[1,4] #Random effect variance
-      # var_e = x[2,4] #Residual Variance
-      # var_f = var(predict(Pred5), na.rm=TRUE) #Fixed effect variance
-      # #Duplicate ICC analyses from MuMIn::r.squaredGLMM
-      # var_f / sum(var_r+var_e+var_f)
-      # 
-      # 
-      # confint(Pred3)
-      # lme4::confint.merMod(Pred3, method="boot")
-      # randef(Pred3)
-      # sigma(Pred5)
-      # profile(Pred5)
-      # terms(Pred3)
-      # residuals(Pred3)
-      # hist(residuals(Pred3), breaks=20)
-      # densityplot(Pred3)
-      # plot(Pred3, type = c("p", "smooth"))
-      # coef(Pred3)
-      # performance::icc(Pred3)
-      # summary(Pred5)
-      # performance::icc(Pred5)
-      # MuMIn::r.squaredGLMM(Pred5)
-
-  
     
-#PLS - Tablet WASI relations (CBU small cohort)
+#Predictive validity - WASI-II (CBU small cohort)
     TabletVariables = c("cancellation_marked_intertime_Norm" , "digit_span_n_correct_Norm" , "reading_n_total_Norm" , "sums_n_total_Norm" , "dot_matrix_n_correct_Norm" , "GNG_Dprime" , "GNG_omErr_Norm" , "GNG_comErr_Norm" , "PD_IRT_ScoreNorm" , "cattell_IRT_ScoreNorm" , "ans_IRT_ScoreNorm") 
+
     df0_lab = df0[df0$SchoolID==99,]
     NoTabletData = apply(df0[TabletVariables],1,function(x) length(which(!is.na(x)))==0)
     NoWASIData = apply(df0[c("MATRIX_RawScore_Norm","VOCAB_RawScore_Norm")],1,function(x) length(which(!is.na(x)))==0)
@@ -178,19 +159,44 @@
           
       ExcludePps = N_Cog_MissingTasksPerPerson>3 #Exclude participants because too much missing tablet data 
       KeepPpsMatrix = t(sapply(!ExcludePps,function(x) rep(x,length(TabletVariables))))
-
       
-  #Create matrices for regression analysis
+  #Create matrices for PLS analysis
     Tablet_Matrix = complete(mice::mice(df0_lab[,TabletVariables],m=1,seed=300,printFlag = FALSE,  method="cart", where=KeepPpsMatrix & is.na(df0_lab[,TabletVariables]))) #matrix of tablet data, imputed missing data
     WASI_Matrix = cbind.data.frame(df0_lab[,c("MATRIX_RawScore_Norm","VOCAB_RawScore_Norm")])
     
+    df0_lab_imputed = Tablet_Matrix
+    
   # Extract Component Scores
-    
     Tablet_Score = psych::fa(Tablet_Matrix, missing=FALSE)$scores
-    WASI_Score = psych::fa(WASI_Matrix, missing=FALSE)$scores
+    WASI_Score = psych::fa(WASI_Matrix, missing=FALSE, scores="tenBerge")$scores
+    df0_lab_imputed$WASI_Score = WASI_Score
+    df0_lab_imputed = data.frame(na.omit(df0_lab_imputed))
     
-    cor.test(Tablet_Score,WASI_Score)
+  # Linear regression on main outcome
     
+    summary(lm(WASI_Score ~ cancellation_marked_intertime_Norm +  digit_span_n_correct_Norm +  reading_n_total_Norm +  sums_n_total_Norm +  dot_matrix_n_correct_Norm +  GNG_Dprime +  GNG_omErr_Norm +  GNG_comErr_Norm +  PD_IRT_ScoreNorm +  cattell_IRT_ScoreNorm +  ans_IRT_ScoreNorm, data=data.frame(scale(df0_lab_imputed))))
+    
+  # Estimate BCA confidence interval
+    
+    lm_fun = function(data,i){
+      return(
+        as.numeric(summary(lm(WASI_Score ~ cancellation_marked_intertime_Norm +  digit_span_n_correct_Norm +  reading_n_total_Norm +  sums_n_total_Norm +  dot_matrix_n_correct_Norm +  GNG_Dprime +  GNG_omErr_Norm +  GNG_comErr_Norm +  PD_IRT_ScoreNorm +  cattell_IRT_ScoreNorm +  ans_IRT_ScoreNorm, data=data[i,]))$r.squared)
+      )
+    }
+    
+    boot_lm = boot::boot(data=df0_lab_imputed, statistic=lm_fun, R=BootstrapResamples)
+    boot::boot.ci(boot_lm, conf=0.95, type="bca")
+    boot::boot.ci(boot_lm, conf=0.00001, type="bca") # Equal to 0.4295, very similar to adjusted R^2 estimate ( 0.4235)
+    
+    
+    lm_fun(df0_lab_imputed)
+    
+  # Correlation between two factor scores (not reported in manuscript)
+      
+      stats::cor.test(Tablet_Score, WASI_Score) # r = 0.654993 (in original data)
+      stats::cor.test(Tablet_Score, WASI_Score)$estimate^2
+      
+  # Reliability of WASI scores
     coefH(Tablet_Matrix,verbose=TRUE,n_bootstrap=500)
     coefH(WASI_Matrix,verbose=TRUE,n_bootstrap=500)
     
@@ -223,29 +229,66 @@
   save(Cor_list, file=file.path(RED_OUTPUTDATA_LOCATION, "Cor_list.Rdata"))
   save(CogV_NumberSchoolTesting, file=file.path(RED_OUTPUTDATA_LOCATION, "CogV_NumberSchoolTesting.Rdata"))
 
-#Hierarchial Linear Models Predicting AA from cognitive variables after controlling for AGE & SES .
-  out_anova=list()
-  p_val = vector()
-  change_R2 = vector()
+# Partial Regression Coefficients
+  #
+  # NOTE - the deprivation statisic was recently swapped in (replacing the use of pupil premium index previously), and in not available in the current synthetic dataset. Therefore, i've just simulated it below: 
+  df0$DEPRIVATION.Index_of_Multiple_Deprivation_Rank = rnorm(nrow(df0))
+  
+  table(is.na(df0_school$DEPRIVATION.Index_of_Multiple_Deprivation_Rank))
+  table(is.na(df0_school$PPI))
+  
+  PartialB = vector()
+  
   for (i in seq_along(CogV_Accuracy)){
     v = CogV_Accuracy[i] #Cognitive Variable That We Want To Test
-    df0_subset = na.omit(df0[,c("S1_TeachNorm_FSN_Complete","PPI","Age1",v)]) #create subset of data with no missing data 
-    base_model = lm(S1_TeachNorm_FSN_Complete ~ Age1 + PPI, data=df0_subset) #regress out age and PPI
-    cog_model =  lm(paste("S1_TeachNorm_FSN_Complete ~ ",paste(c("Age1","PPI",v), collapse="+"),sep = ""),data=df0_subset)
-    out_anova[[i]] = anova(base_model,cog_model)
-    p_val[i] = as.numeric(out_anova[[i]]$"Pr(>F)"[2])
-    change_R2[i] = (summary(cog_model)$adj.r.squared-summary(base_model)$adj.r.squared)
+    df0_subset = na.omit(df0[,c("S1_TeachNorm_FSN_Complete","DEPRIVATION.Index_of_Multiple_Deprivation_Rank","Age1",v)]) #create subset of data with no missing data 
+    cog_model =  lm(paste("S1_TeachNorm_FSN_Complete ~ ",paste(c("Age1","DEPRIVATION.Index_of_Multiple_Deprivation_Rank",v), collapse="+"),sep = ""),data=data.frame(base::scale(df0_subset, center = TRUE, scale = TRUE)))
+    PartialB[i] = cog_model$coefficients[4]
   }
   
+  save(PartialB,file=file.path(RED_OUTPUTDATA_LOCATION, "PartialB.Rdata")) #output the change in R2 (sqrt) with significance values, formatted nicely! 
   
-  save(change_R2,file=file.path(RED_OUTPUTDATA_LOCATION, "change_R2.Rdata"))
-  #save(p_val_out,file="p_val_out.Rdata")
-    change_R2_out = gsub("^0.","0.",format(change_R2^.5,digits=0,nsmall=2))
-    p_val_out = rep("",length(p_val))
-    p_val_out[.05/length(p_val)<p_val & p_val<.05]="*"
-    p_val_out[p_val<.05/length(p_val)]="**"
-    change_R2_out = paste0(change_R2_out,"~",p_val_out,"~")
-  save(change_R2_out,file=file.path(RED_OUTPUTDATA_LOCATION, "change_R2_out.Rdata")) #output the change in R2 (sqrt) with significance values, formatted nicely! 
   
-
-
+  
+  
+  
+  
+  
+  
+  
+  ### Old Code - used in preprint, but is a bit too complicated to explain...
+  
+  
+#   
+#   
+# #Hierarchial Linear Models Predicting AA from cognitive variables over AGE & SES .
+#   out_anova=list()
+#   p_val = vector()
+#   change_R2 = vector()
+#   for (i in seq_along(CogV_Accuracy)){
+#     v = CogV_Accuracy[i] #Cognitive Variable That We Want To Test
+#     df0_subset = na.omit(df0[,c("S1_TeachNorm_FSN_Complete","PPI","Age1",v)]) #create subset of data with no missing data 
+#     base_model = lm(S1_TeachNorm_FSN_Complete ~ Age1 + PPI, data=df0_subset) #regress out age and PPI
+#     cog_model =  lm(paste("S1_TeachNorm_FSN_Complete ~ ",paste(c("Age1","PPI",v), collapse="+"),sep = ""),data=df0_subset)
+#     out_anova[[i]] = anova(base_model,cog_model)
+#     p_val[i] = as.numeric(out_anova[[i]]$"Pr(>F)"[2])
+#     change_R2[i] = (summary(cog_model)$adj.r.squared-summary(base_model)$adj.r.squared)
+#   }
+#   
+#   save(change_R2,file=file.path(RED_OUTPUTDATA_LOCATION, "change_R2.Rdata"))
+#   #save(p_val_out,file="p_val_out.Rdata")
+#     change_R2_out = gsub("^0.","0.",format(change_R2^.5,digits=0,nsmall=2))
+#     p_val_out = rep("",length(p_val))
+#     p_val_out[.05/length(p_val)<p_val & p_val<.05]="*"
+#     p_val_out[p_val<.05/length(p_val)]="**"
+#     change_R2_out = paste0(change_R2_out,"~",p_val_out,"~")
+#   save(change_R2_out,file=file.path(RED_OUTPUTDATA_LOCATION, "change_R2_out.Rdata")) #output the change in R2 (sqrt) with significance values, formatted nicely! 
+#   
+# #Lm with just two AA tablet measures
+#   lm_model1 = lm(S1_TeachNorm_FSN_Complete ~ sums_n_total_Norm + reading_n_total_Norm,data=df0_PV, na.action = "na.exclude")
+#   summary(lm_model1)
+#   plot(df0_PV$S1_TeachNorm_FSN_Complete, predict(lm_model1))
+#   cor.test(df0_PV$S1_TeachNorm_FSN_Complete, predict(lm_model1))
+#   
+# 
+# 

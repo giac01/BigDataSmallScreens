@@ -1,25 +1,21 @@
 # Script which generates Table 1 data, and exports to clipboard and csv
 
-
 source("P1S0 - Load Data.R")
-
-#Note that reliability/validity .Rdata files in the repository are estimated from synthetic data. 
 
 
 #Load Data
   base::load(file.path(RED_OUTPUTDATA_LOCATION, "TimeTakenTable.RData")) #Data on how long each task takes
-  base::load(file.path(RED_OUTPUTDATA_LOCATION, "CTT_PlotData.Rdata")) #Reliability metrics for each task with confidence intervals 
+  base::load(file.path(RED_OUTPUTDATA_LOCATION, "CTT_PlotData.Rdata")) # #Reliability metrics for each task with confidence intervals 
     CTT_PlotData = rbind.data.frame(CTT_PlotData[1,],rep(NA,length(CTT_PlotData)),rep(NA,length(CTT_PlotData)),CTT_PlotData[2:nrow(CTT_PlotData),])
     CTT_PlotData$Tasks3 = CogV_Accuracy_Labels
     CTT_PlotData$Tasks3 = gsub("Go/No-Go","G/N-G",CTT_PlotData$Tasks3)
     CTT_PlotData$Tasks3[12] = "Non-Symbolic Num. Discrim."
-  base::load(file.path(RED_OUTPUTDATA_LOCATION, "Cor_list.Rdata"))
-  base::load(file.path(RED_OUTPUTDATA_LOCATION, "CogV_NumberSchoolTesting.Rdata"))
+  base::load(file.path(RED_OUTPUTDATA_LOCATION, "Cor_list.Rdata")) #List of pearson correlations to teacher rated AA for each task
+  base::load(file.path(RED_OUTPUTDATA_LOCATION, "CogV_NumberSchoolTesting.Rdata")) # #Number of kids who've completed each task 
   #load("change_R2_out.Rdata")
-  base::load(file.path(RED_OUTPUTDATA_LOCATION, "change_R2.Rdata"))
-    change_R2 = gsub("^(-?).","\\1",format(change_R2^.5,digits=0,nsmall=2))
+  base::load(file.path(RED_OUTPUTDATA_LOCATION, "PartialB.Rdata")) #Partial standardised regression coefficient for each task
+    change_R2 = gsub("^(-?).","\\1",format(PartialB,digits=0,nsmall=2))
   
-
 TimeTakenTable_edit = TimeTakenTable[c(1:4,4,4,5:12),] #Add empty rows for multiple tasks
   rownames(TimeTakenTable_edit)=NULL
 
@@ -38,16 +34,25 @@ TaskData = cbind.data.frame(CTT_PlotData$Tasks3,CogV_NumberSchoolTesting,Correla
   TaskData = apply(TaskData,2,function(x)gsub("^[\\s]?(0[\\.])", ".", as.character(x)))
   TaskData = apply(TaskData,2, function(x) gsub("0[\\.]","0.",gsub("-0[\\.]","-.",x)))
   TaskData[TaskData=="  NA"]=" "
-
+  TaskData
+  
   
   #"$[\\]Delta R^{2^{1/2}}$"
 colnames(TaskData) = c("", "", "r", "LB", "UB", "Δr", "Rel", "LB","UB","10%","50%","90%" )
-
 save(TaskData,file=file.path(RED_OUTPUTDATA_LOCATION, "TaskData.Rdata"))
 
 
 #Write table to clipboard for copy and pasting into word/excel ... 
 write.table(TaskData, file="clip", sep="\t", row.names=FALSE)
 clipr::write_clip(TaskData)
-
+# rownames(TaskData)
+# TaskData
+# ncol(TaskData)
+# library(markdown)
+# library(formattable)
+# library(kableExtra)
+# 
+# knitr::kable(TaskData) %>%
+#   #kableExtra::kable_styling("striped") %>%
+#   kableExtra::add_header_above(c("Task Name","N","Correlation With Academic Achievement"=4,"Coefficient H Reliability"=3,"Time Taken (Percentile)"=3))
 
