@@ -237,17 +237,18 @@
   table(is.na(df0_school$DEPRIVATION.Index_of_Multiple_Deprivation_Rank))
   table(is.na(df0_school$PPI))
   
+  df0$Deprivation_Norm = Normalise(df0$DEPRIVATION.Index_of_Multiple_Deprivation_Rank)
+  
   PartialB = vector()
   
   for (i in seq_along(CogV_Accuracy)){
     v = CogV_Accuracy[i] #Cognitive Variable That We Want To Test
-    df0_subset = na.omit(df0[,c("S1_TeachNorm_FSN_Complete","DEPRIVATION.Index_of_Multiple_Deprivation_Rank","Age1",v)]) #create subset of data with no missing data 
-    cog_model =  lm(paste("S1_TeachNorm_FSN_Complete ~ ",paste(c("Age1","DEPRIVATION.Index_of_Multiple_Deprivation_Rank",v), collapse="+"),sep = ""),data=data.frame(base::scale(df0_subset, center = TRUE, scale = TRUE)))
+    df0_subset = na.omit(df0[,c("S1_TeachNorm_FSN_Complete","Deprivation_Norm","Age1",v)]) #create subset of data with no missing data 
+    cog_model =  lm(paste("S1_TeachNorm_FSN_Complete ~ ",paste(c("Age1","Deprivation_Norm",v), collapse="+"),sep = ""),data=data.frame(base::scale(df0_subset, center = TRUE, scale = TRUE)))
     PartialB[i] = cog_model$coefficients[4]
   }
   
   save(PartialB,file=file.path(RED_OUTPUTDATA_LOCATION, "PartialB.Rdata")) #output the change in R2 (sqrt) with significance values, formatted nicely! 
-  
   
   
   
